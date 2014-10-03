@@ -10,10 +10,33 @@
             height: 100%;
             width: 100%;
         }
+
+        h1 {
+        font-size: 16px;
+        padding: 0;
+        margin: 20px 0 0;
+        //line-height: 40px;
+        }
+
+        h2 {
+            font-size: 12px;
+            padding: 0;
+            margin: 20px 0 0;
+            //line-height: 40px;
+        }
+
+        h3 {
+            font-size: 10px;
+            padding: 0;
+            margin: 4px 0 0;
+        //    line-height: 40px;
+        }
     </style>
 </head>
 <body>
-    <div id="map"></div>
+
+        <div id="map"></div>
+
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
@@ -27,50 +50,48 @@
     </script>
     <script>
 
-    var map = L.map('map').setView([52.501852, 13.445507], 14);
+    var map = L.map('map').setView([52.501852, 13.445507], 13);
     L.tileLayer('http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.jpg', {
     //L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
     maxZoom: 18
     }).addTo(map);
 
-    var geojsonFeature = {
-        "type": "Feature",
-        "properties": {
-            "name": "Coors Field",
-            "amenity": "Baseball Stadium",
-            "popupContent": "This is where the Rockies play!"
-        },
-        "geometry": {
-            "type": "Point",
-            "coordinates": [13.445507, 52.501852]
-        }
-    };
-
-    var myStyle = {
-        "color": "#ff7800",
-        "weight": 5,
-        "opacity": 0.65
-    };
 
     var eventsLayer = L.geoJson().addTo(map);
-    
+
 
     function onEachFeature(feature, layer) {
+        console.log('f');
         var artists = feature.properties['artists'];
-        var iframes = artists.map(function (artist){
+        var iframes = artists.map(function (artist, i){
+            console.log(i);
+            var artistName = '<h3>' + artist.name + '</h3>'
             var track_id = artist['sc_track_id'];
-            return '<iframe width="230" height="100" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/' + track_id + '&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true"></iframe>'
+            var iframe = '<iframe width="280" height="60" scrolling="no" frameborder="no"' +
+                         'src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/' + track_id +
+                         '&amp;auto_play=' + (i == 0) +
+                         '&amp;hide_related=true&amp;show_comments=false&amp;show_user=true&amp;show_reposts=false&amp;visual=true">' +
+                         '</iframe>';
+            return '<div>' + artistName + iframe + '</div>';
 
         });
-        console.log(feature.properties.artists[0])
-        var popupContent = iframes[0];
+        var clubName = feature.properties.club.name;
+        var clubAdress = feature.properties.club.adress;
+        var partyName = feature.properties.name;
+        console.log(feature.properties.club)
+        var popupContent = "<h2>"+clubName+"</h2>"+
+                            "<div>"+clubAdress+"</div>" +
+                            "<h1>"+partyName+"</h1>"+
+                            "<span><b>Linup:</b></span>"
+                            +iframes.join(seperator="");
         layer.bindPopup(popupContent);
     }
 
 /*    <iframe width="100%" height="450" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/161638378&amp;auto_play=false&amp;hide_related=false&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false&amp;visual=true"></iframe>*/
 
     function addEvents(geojson) {
+        console.log(geojson);
         L.geoJson(geojson, {
             onEachFeature: onEachFeature,
 
@@ -88,9 +109,19 @@
         }).addTo(map);
     }
 
-    $.getJSON('today.geo.json', addEvents);
-    
+    $.getJSON('today.geo.json', addEvents)
+        .done(function() {
+        console.log( "second success" );
+      })
+      .fail(function() {
+        console.log( "error" );
+      })
+      .always(function() {
+        console.log( "complete" );
+      });
+
+
     </script>
-    
+
 
 </body>
